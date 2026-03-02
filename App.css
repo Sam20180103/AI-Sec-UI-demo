@@ -430,6 +430,8 @@ body {
 .traffic-list::-webkit-scrollbar,
 .dialogue-list::-webkit-scrollbar,
 .source-status-list::-webkit-scrollbar,
+.pie-legend-list::-webkit-scrollbar,
+.workspace-tabs::-webkit-scrollbar,
 .report-list::-webkit-scrollbar,
 .report-editor textarea::-webkit-scrollbar,
 .alert-modal::-webkit-scrollbar {
@@ -437,25 +439,13 @@ body {
   height: 8px;
 }
 
-.queue-scrollbox::-webkit-scrollbar-thumb,
-.queue-list::-webkit-scrollbar-thumb,
-.traffic-list::-webkit-scrollbar-thumb,
-.dialogue-list::-webkit-scrollbar-thumb,
-.source-status-list::-webkit-scrollbar-thumb,
-.report-list::-webkit-scrollbar-thumb,
-.report-editor textarea::-webkit-scrollbar-thumb,
-.alert-modal::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.9);
-  border-radius: 999px;
-}
-
-.report-list,
-.report-editor textarea,
-.alert-modal {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(34, 211, 238, 0.35) rgba(15, 23, 42, 0.62);
-}
-
+.queue-scrollbox::-webkit-scrollbar-track,
+.queue-list::-webkit-scrollbar-track,
+.traffic-list::-webkit-scrollbar-track,
+.dialogue-list::-webkit-scrollbar-track,
+.source-status-list::-webkit-scrollbar-track,
+.pie-legend-list::-webkit-scrollbar-track,
+.workspace-tabs::-webkit-scrollbar-track,
 .report-list::-webkit-scrollbar-track,
 .report-editor textarea::-webkit-scrollbar-track,
 .alert-modal::-webkit-scrollbar-track {
@@ -463,13 +453,42 @@ body {
   border-radius: 999px;
 }
 
+.queue-scrollbox::-webkit-scrollbar-thumb,
+.queue-list::-webkit-scrollbar-thumb,
+.traffic-list::-webkit-scrollbar-thumb,
+.dialogue-list::-webkit-scrollbar-thumb,
+.source-status-list::-webkit-scrollbar-thumb,
+.pie-legend-list::-webkit-scrollbar-thumb,
+.workspace-tabs::-webkit-scrollbar-thumb,
 .report-list::-webkit-scrollbar-thumb,
 .report-editor textarea::-webkit-scrollbar-thumb,
 .alert-modal::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, rgba(34, 211, 238, 0.45), rgba(14, 116, 144, 0.75));
+  border-radius: 999px;
   border: 1px solid rgba(15, 23, 42, 0.8);
 }
 
+.queue-scrollbox,
+.queue-list,
+.traffic-list,
+.dialogue-list,
+.source-status-list,
+.pie-legend-list,
+.workspace-tabs,
+.report-list,
+.report-editor textarea,
+.alert-modal {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.35) rgba(15, 23, 42, 0.62);
+}
+
+.queue-scrollbox::-webkit-scrollbar-thumb:hover,
+.queue-list::-webkit-scrollbar-thumb:hover,
+.traffic-list::-webkit-scrollbar-thumb:hover,
+.dialogue-list::-webkit-scrollbar-thumb:hover,
+.source-status-list::-webkit-scrollbar-thumb:hover,
+.pie-legend-list::-webkit-scrollbar-thumb:hover,
+.workspace-tabs::-webkit-scrollbar-thumb:hover,
 .report-list::-webkit-scrollbar-thumb:hover,
 .report-editor textarea::-webkit-scrollbar-thumb:hover,
 .alert-modal::-webkit-scrollbar-thumb:hover {
