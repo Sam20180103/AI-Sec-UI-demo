@@ -13,7 +13,11 @@ export const attackClassStats = [
   { category: '病毒木马', count: 7, color: '#ef4444' },
 ]
 
-export const defaultTemplates = ['电力监测日报', '演习快报', '现货系统专项报']
+export const defaultTemplates = [
+  { name: '电力监测日报', dataSource: 'WAF日志、流量分析、主机安全告警' },
+  { name: '演习快报', dataSource: '攻防演练平台、SIEM关联结果、应急处置记录' },
+  { name: '现货系统专项报', dataSource: '现货交易系统日志、边界网关日志、威胁情报库' },
+]
 
 export const mockEvents = [
   {

@@ -1251,7 +1251,7 @@ body {
 .template-create-box {
   display: grid;
   gap: 6px;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
 }
 
 .template-create-box input {
@@ -1262,6 +1262,27 @@ body {
   border-radius: 8px;
   padding: 8px;
   font-size: 12px;
+}
+
+.template-source-tip {
+  border: 1px solid rgba(30, 41, 59, 0.82);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.58);
+  padding: 7px 8px;
+  display: grid;
+  gap: 3px;
+}
+
+.template-source-tip span {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.template-source-tip strong {
+  color: #bae6fd;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .report-controls label {

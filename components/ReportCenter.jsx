@@ -12,8 +12,14 @@ function ReportCenter({
 }) {
   const [isCreatingTemplate, setIsCreatingTemplate] = useState(false)
   const [newTemplateName, setNewTemplateName] = useState('')
+  const [newTemplateSource, setNewTemplateSource] = useState('')
   const [previewReportId, setPreviewReportId] = useState('')
   const [draftContent, setDraftContent] = useState('')
+
+  const selectedTemplateMeta = useMemo(
+    () => templates.find((tpl) => tpl.name === selectedTemplate) ?? templates[0],
+    [selectedTemplate, templates],
+  )
 
   const previewReport = useMemo(
     () => reports.find((report) => report.id === previewReportId),
@@ -32,10 +38,12 @@ function ReportCenter({
 
   const handleCreate = () => {
     const name = newTemplateName.trim()
-    if (!name) return
-    onCreateTemplate(name)
+    const source = newTemplateSource.trim()
+    if (!name || !source) return
+    onCreateTemplate(name, source)
     onTemplateChange(name)
     setNewTemplateName('')
+    setNewTemplateSource('')
     setIsCreatingTemplate(false)
   }
 
@@ -53,6 +61,7 @@ function ReportCenter({
     const fileName = `${report.template}-${report.eventTitle}-${report.timestamp.replace(/[\s:/]/g, '-')}.txt`
     const text = [
       `报告模板: ${report.template}`,
+      `数据来源: ${report.templateDataSource ?? '未配置'}`,
       `事件名称: ${report.eventTitle}`,
       `生成时间: ${report.timestamp}`,
       '',
@@ -83,12 +92,17 @@ function ReportCenter({
           onChange={(event) => handleTemplateSelect(event.target.value)}
         >
           {templates.map((tpl) => (
-            <option key={tpl} value={tpl}>
-              {tpl}
+            <option key={tpl.name} value={tpl.name}>
+              {tpl.name}
             </option>
           ))}
           <option value="__create_new__">+ 创建新模板</option>
         </select>
+
+        <div className="template-source-tip">
+          <span>数据来源</span>
+          <strong>{selectedTemplateMeta?.dataSource ?? '未配置'}</strong>
+        </div>
 
         {isCreatingTemplate ? (
           <div className="template-create-box">
@@ -96,6 +110,11 @@ function ReportCenter({
               value={newTemplateName}
               onChange={(event) => setNewTemplateName(event.target.value)}
               placeholder="输入新模板名称"
+            />
+            <input
+              value={newTemplateSource}
+              onChange={(event) => setNewTemplateSource(event.target.value)}
+              placeholder="配置数据来源，例如：WAF日志、EDR、流量分析"
             />
             <button type="button" className="secondary-btn" onClick={handleCreate}>
               新增模板
@@ -119,6 +138,7 @@ function ReportCenter({
                 <strong>{report.template}</strong>
                 <span>{report.eventTitle}</span>
                 <em>{report.timestamp}</em>
+                <em>数据来源：{report.templateDataSource ?? '未配置'}</em>
               </div>
               <div className="report-actions">
                 <button type="button" className="detail-btn" onClick={() => openPreview(report)}>
@@ -149,6 +169,10 @@ function ReportCenter({
               <div className="alert-meta-item">
                 <span>报告模板</span>
                 <strong>{previewReport.template}</strong>
+              </div>
+              <div className="alert-meta-item">
+                <span>数据来源</span>
+                <strong>{previewReport.templateDataSource ?? '未配置'}</strong>
               </div>
               <div className="alert-meta-item">
                 <span>关联事件</span>

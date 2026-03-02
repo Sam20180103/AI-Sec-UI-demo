@@ -18,7 +18,7 @@ import './App.css'
 function App() {
   const [selectedItem, setSelectedItem] = useState({ type: 'attack', id: mockEvents[0].id })
   const [templates, setTemplates] = useState(defaultTemplates)
-  const [selectedTemplate, setSelectedTemplate] = useState(defaultTemplates[0])
+  const [selectedTemplate, setSelectedTemplate] = useState(defaultTemplates[0].name)
   const [reports, setReports] = useState(sampleReports)
 
   const selectedAttackEvent = useMemo(
@@ -139,6 +139,11 @@ function App() {
     }
   }, [selectedItem, selectedAttackEvent, selectedNoiseEvent])
 
+  const selectedTemplateMeta = useMemo(
+    () => templates.find((tpl) => tpl.name === selectedTemplate) ?? templates[0],
+    [selectedTemplate, templates],
+  )
+
   const handleGenerateReport = () => {
     const now = new Date()
     const timestamp = `${now.toLocaleDateString('zh-CN')} ${now.toLocaleTimeString('zh-CN', {
@@ -149,10 +154,12 @@ function App() {
       {
         id: `report-${Date.now()}`,
         template: selectedTemplate,
+        templateDataSource: selectedTemplateMeta?.dataSource ?? '未配置',
         eventTitle: selectedEvent.title,
         timestamp,
         content: [
           `【模板】${selectedTemplate}`,
+          `【数据来源】${selectedTemplateMeta?.dataSource ?? '未配置'}`,
           `【事件】${selectedEvent.title}`,
           `【攻击源IP】${selectedEvent.sourceIp}`,
           `【攻击结果】${selectedEvent.attackResult}`,
@@ -164,11 +171,16 @@ function App() {
     ])
   }
 
-  const handleCreateTemplate = (templateName) => {
-    const normalized = templateName.trim()
-    if (!normalized) return
+  const handleCreateTemplate = (templateName, dataSource) => {
+    const normalizedName = templateName.trim()
+    const normalizedSource = dataSource.trim()
+    if (!normalizedName || !normalizedSource) return
 
-    setTemplates((prev) => (prev.includes(normalized) ? prev : [...prev, normalized]))
+    setTemplates((prev) =>
+      prev.some((tpl) => tpl.name === normalizedName)
+        ? prev
+        : [...prev, { name: normalizedName, dataSource: normalizedSource }],
+    )
   }
 
   const handleUpdateReport = (reportId, nextContent) => {
