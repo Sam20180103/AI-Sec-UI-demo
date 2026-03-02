@@ -16,14 +16,29 @@ import {
 import './App.css'
 
 function App() {
-  const [selectedItem, setSelectedItem] = useState({ type: 'attack', id: mockEvents[0].id })
+  const [views, setViews] = useState([{ id: 'main', title: '主视图', type: 'main', eventIds: [] }])
+  const [activeViewId, setActiveViewId] = useState('main')
+  const [selectedByView, setSelectedByView] = useState({ main: { type: 'attack', id: mockEvents[0].id } })
   const [templates, setTemplates] = useState(defaultTemplates)
   const [selectedTemplate, setSelectedTemplate] = useState(defaultTemplates[0].name)
   const [reports, setReports] = useState(sampleReports)
 
+  const activeView = useMemo(
+    () => views.find((view) => view.id === activeViewId) ?? views[0],
+    [activeViewId, views],
+  )
+
+  const currentEvents = useMemo(() => {
+    if (activeView?.type !== 'filter') return mockEvents
+    const idSet = new Set(activeView.eventIds)
+    return mockEvents.filter((event) => idSet.has(event.id))
+  }, [activeView])
+
+  const selectedItem = selectedByView[activeViewId] ?? { type: 'attack', id: currentEvents[0]?.id ?? mockEvents[0].id }
+
   const selectedAttackEvent = useMemo(
-    () => mockEvents.find((item) => item.id === selectedItem.id) ?? mockEvents[0],
-    [selectedItem],
+    () => currentEvents.find((item) => item.id === selectedItem.id) ?? currentEvents[0] ?? mockEvents[0],
+    [currentEvents, selectedItem],
   )
 
   const selectedNoiseEvent = useMemo(
@@ -189,20 +204,97 @@ function App() {
     )
   }
 
+  const setSelectedItemForView = (viewId, next) => {
+    setSelectedByView((prev) => ({ ...prev, [viewId]: next }))
+  }
+
+  const handleFilterCommand = (rawQuery) => {
+    const query = rawQuery.trim()
+    if (!query) return { ok: false, message: '过滤条件为空，请补充系统名/IP。' }
+
+    const ipMatches = query.match(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g) ?? []
+    const keywordText = query
+      .replace(/[，,、]/g, ' ')
+      .replace(/我想看|所有|被攻击|情况|系统|告警|原始/g, ' ')
+      .trim()
+    const keywords = keywordText.split(/\s+/).filter(Boolean)
+
+    const filtered = mockEvents.filter((event) => {
+      const textMatched =
+        keywords.length === 0 ||
+        keywords.some(
+          (key) =>
+            event.title.includes(key) ||
+            event.target.includes(key) ||
+            event.summary.includes(key) ||
+            event.relatedServers.some((server) => server.name.includes(key) || server.ip.includes(key)),
+        )
+
+      const ipMatched =
+        ipMatches.length === 0 ||
+        ipMatches.some(
+          (ip) =>
+            event.sourceIp.includes(ip) ||
+            event.relatedServers.some((server) => server.ip.includes(ip)) ||
+            event.rawTraffic.some((flow) => flow.srcIp.includes(ip) || flow.dstIp.includes(ip)),
+        )
+
+      return textMatched && ipMatched
+    })
+
+    if (filtered.length === 0) {
+      return { ok: false, message: '未命中过滤结果，请调整系统名或IP关键词。' }
+    }
+
+    const viewId = `filter-${Date.now()}`
+    const viewTitle = `筛选: ${query.slice(0, 14)}${query.length > 14 ? '...' : ''}`
+    setViews((prev) => [...prev, { id: viewId, title: viewTitle, type: 'filter', eventIds: filtered.map((e) => e.id) }])
+    setSelectedItemForView(viewId, { type: 'attack', id: filtered[0].id })
+    setActiveViewId(viewId)
+
+    return { ok: true, message: `已创建筛选页，命中 ${filtered.length} 条告警。` }
+  }
+
+  const closeView = (viewId) => {
+    if (viewId === 'main') return
+    setViews((prev) => prev.filter((view) => view.id !== viewId))
+    setSelectedByView((prev) => {
+      const next = { ...prev }
+      delete next[viewId]
+      return next
+    })
+    if (activeViewId === viewId) setActiveViewId('main')
+  }
+
   return (
     <div className="app-shell">
       <header className="panel header-panel">
         <HeaderStats noiseReduction={noiseReduction} attackClassStats={attackClassStats} />
       </header>
 
+      <div className="workspace-tabs">
+        {views.map((view) => (
+          <div key={view.id} className={`workspace-tab ${activeViewId === view.id ? 'active' : ''}`}>
+            <button type="button" onClick={() => setActiveViewId(view.id)}>
+              {view.title}
+            </button>
+            {view.id !== 'main' ? (
+              <button type="button" className="close" onClick={() => closeView(view.id)}>
+                x
+              </button>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
       <main className="body-grid">
         <aside className="panel left-panel">
           <EventQueue
-            events={mockEvents}
+            events={currentEvents}
             noiseEvents={aiNoiseEvents}
             selectedItem={selectedItem}
-            onSelectAttack={(id) => setSelectedItem({ type: 'attack', id })}
-            onSelectNoise={(id) => setSelectedItem({ type: 'noise', id })}
+            onSelectAttack={(id) => setSelectedItemForView(activeViewId, { type: 'attack', id })}
+            onSelectNoise={(id) => setSelectedItemForView(activeViewId, { type: 'noise', id })}
           />
         </aside>
 
@@ -211,7 +303,7 @@ function App() {
             <CorrelationAnalysis selectedEvent={selectedEvent} />
           </div>
           <div className="panel center-bottom">
-            <ReasoningLog selectedEvent={selectedEvent} />
+            <ReasoningLog selectedEvent={selectedEvent} onFilterCommand={handleFilterCommand} />
           </div>
         </section>
 

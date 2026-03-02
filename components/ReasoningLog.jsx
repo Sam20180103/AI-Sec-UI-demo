@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { GitBranch, MessageSquareMore, Send, Target, TerminalSquare } from 'lucide-react'
 
-function ReasoningLog({ selectedEvent }) {
+function ReasoningLog({ selectedEvent, onFilterCommand }) {
   const formattedSteps = useMemo(
     () => selectedEvent.reasoningSteps.map((step, index) => `[步骤 ${index + 1}] ${step}`),
     [selectedEvent],
@@ -71,6 +71,12 @@ function ReasoningLog({ selectedEvent }) {
   const [question, setQuestion] = useState('')
   const [dialogues, setDialogues] = useState([])
 
+  const commandOptions = [
+    { cmd: '/ask', help: '追问当前告警分析' },
+    { cmd: '/filter', help: '按系统/IP过滤原始告警并新开筛选页' },
+  ]
+  const showCommandMenu = question.trim().startsWith('/')
+
   const openEvidence = (node) => {
     const stepIndex = Math.max(0, node.stepIndex)
     const detail = stepEvidences[stepIndex]
@@ -136,8 +142,29 @@ function ReasoningLog({ selectedEvent }) {
     const text = question.trim()
     if (!text) return
 
+    if (text.startsWith('/filter')) {
+      const filterText = text.replace('/filter', '').trim()
+      const result = onFilterCommand?.(filterText) ?? { ok: false, message: '过滤命令未启用。' }
+      setDialogues((prev) => [
+        ...prev,
+        { id: `u-${Date.now()}`, role: 'user', text },
+        { id: `b-${Date.now() + 1}`, role: result.ok ? 'bot' : 'bot-warning', text: result.message },
+      ])
+      setQuestion('')
+      return
+    }
+
+    const askText = text.startsWith('/ask') ? text.replace('/ask', '').trim() : text
+    if (!askText) {
+      setDialogues((prev) => [
+        ...prev,
+        { id: `b-${Date.now()}`, role: 'bot-warning', text: '请输入追问内容，例如：/ask 攻击结果判定依据是什么？' },
+      ])
+      return
+    }
+
     const userMessage = { id: `u-${Date.now()}`, role: 'user', text }
-    const botMessage = { id: `b-${Date.now() + 1}`, role: 'bot', text: getFollowupReply(text) }
+    const botMessage = { id: `b-${Date.now() + 1}`, role: 'bot', text: getFollowupReply(askText) }
 
     setDialogues((prev) => [...prev, userMessage, botMessage])
     setQuestion('')
@@ -248,13 +275,28 @@ function ReasoningLog({ selectedEvent }) {
           <input
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
-            placeholder="追问示例：本次攻击结果是成功还是企图？"
+            placeholder="输入 / 触发命令：/ask 或 /filter"
           />
           <button type="submit">
             <Send size={14} />
             发送
           </button>
         </form>
+
+        {showCommandMenu ? (
+          <div className="command-menu">
+            {commandOptions.map((item) => (
+              <button
+                type="button"
+                key={item.cmd}
+                onClick={() => setQuestion(`${item.cmd} `)}
+              >
+                <strong>{item.cmd}</strong>
+                <span>{item.help}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   )
