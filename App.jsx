@@ -16,7 +16,9 @@ import {
 import './App.css'
 
 function App() {
-  const [views, setViews] = useState([{ id: 'main', title: '主视图', type: 'main', eventIds: [] }])
+  const [views, setViews] = useState([
+    { id: 'main', title: '主视图', type: 'main', eventIds: [], noiseIds: [] },
+  ])
   const [activeViewId, setActiveViewId] = useState('main')
   const [selectedByView, setSelectedByView] = useState({ main: { type: 'attack', id: mockEvents[0].id } })
   const [templates, setTemplates] = useState(defaultTemplates)
@@ -34,7 +36,17 @@ function App() {
     return mockEvents.filter((event) => idSet.has(event.id))
   }, [activeView])
 
-  const selectedItem = selectedByView[activeViewId] ?? { type: 'attack', id: currentEvents[0]?.id ?? mockEvents[0].id }
+  const currentNoiseEvents = useMemo(() => {
+    if (activeView?.type !== 'filter') return aiNoiseEvents
+    const idSet = new Set(activeView.noiseIds ?? [])
+    return aiNoiseEvents.filter((item) => idSet.has(item.id))
+  }, [activeView])
+
+  const selectedItem =
+    selectedByView[activeViewId] ??
+    (currentEvents[0]
+      ? { type: 'attack', id: currentEvents[0].id }
+      : { type: 'noise', id: currentNoiseEvents[0]?.id ?? aiNoiseEvents[0].id })
 
   const selectedAttackEvent = useMemo(
     () => currentEvents.find((item) => item.id === selectedItem.id) ?? currentEvents[0] ?? mockEvents[0],
@@ -42,8 +54,8 @@ function App() {
   )
 
   const selectedNoiseEvent = useMemo(
-    () => aiNoiseEvents.find((item) => item.id === selectedItem.id) ?? aiNoiseEvents[0],
-    [selectedItem],
+    () => currentNoiseEvents.find((item) => item.id === selectedItem.id) ?? currentNoiseEvents[0] ?? aiNoiseEvents[0],
+    [currentNoiseEvents, selectedItem],
   )
 
   const selectedEvent = useMemo(() => {
@@ -237,7 +249,7 @@ function App() {
       .trim()
     const keywords = keywordText.split(/\s+/).filter(Boolean)
 
-    const filtered = mockEvents.filter((event) => {
+    const filteredAttack = mockEvents.filter((event) => {
       const textMatched =
         keywords.length === 0 ||
         keywords.some(
@@ -260,7 +272,26 @@ function App() {
       return textMatched && ipMatched
     })
 
-    if (filtered.length === 0) {
+    const filteredNoise = aiNoiseEvents.filter((item) => {
+      const textMatched =
+        keywords.length === 0 ||
+        keywords.some(
+          (key) =>
+            item.title.includes(key) ||
+            item.source.includes(key) ||
+            item.reason.includes(key) ||
+            item.tag.includes(key),
+        )
+
+      const ipMatched =
+        ipMatches.length === 0 || ipMatches.some((ip) => item.source.includes(ip) || item.reason.includes(ip))
+
+      return textMatched && ipMatched
+    })
+
+    const total = filteredAttack.length + filteredNoise.length
+
+    if (total === 0) {
       return {
         ok: false,
         message:
@@ -270,11 +301,27 @@ function App() {
 
     const viewId = `filter-${Date.now()}`
     const viewTitle = `筛选: ${query.slice(0, 14)}${query.length > 14 ? '...' : ''}`
-    setViews((prev) => [...prev, { id: viewId, title: viewTitle, type: 'filter', eventIds: filtered.map((e) => e.id) }])
-    setSelectedItemForView(viewId, { type: 'attack', id: filtered[0].id })
+    setViews((prev) => [
+      ...prev,
+      {
+        id: viewId,
+        title: viewTitle,
+        type: 'filter',
+        eventIds: filteredAttack.map((e) => e.id),
+        noiseIds: filteredNoise.map((e) => e.id),
+      },
+    ])
+    if (filteredAttack[0]) {
+      setSelectedItemForView(viewId, { type: 'attack', id: filteredAttack[0].id })
+    } else {
+      setSelectedItemForView(viewId, { type: 'noise', id: filteredNoise[0].id })
+    }
     setActiveViewId(viewId)
 
-    return { ok: true, message: `已创建筛选页，命中 ${filtered.length} 条告警。` }
+    return {
+      ok: true,
+      message: `已创建筛选页，命中 ${total} 条（攻击事件 ${filteredAttack.length}，AI降噪 ${filteredNoise.length}）。`,
+    }
   }
 
   const closeView = (viewId) => {
@@ -313,7 +360,7 @@ function App() {
         <aside className="panel left-panel">
           <EventQueue
             events={currentEvents}
-            noiseEvents={aiNoiseEvents}
+            noiseEvents={currentNoiseEvents}
             selectedItem={selectedItem}
             onSelectAttack={(id) => setSelectedItemForView(activeViewId, { type: 'attack', id })}
             onSelectNoise={(id) => setSelectedItemForView(activeViewId, { type: 'noise', id })}
