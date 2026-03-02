@@ -286,11 +286,11 @@ export const mockEvents = [
   },
   {
     id: 'evt-bruteforce-gw',
-    title: '南网网关暴力破解',
+    title: '边界网关暴力破解',
     severity: '高危',
     disposalStatus: '已处置',
     type: 'bruteforce',
-    target: '南网边界接入系统',
+    target: '边界接入系统',
     sourceIp: '112.74.33.218',
     time: '11:27:53',
     timeWindow: '近3分钟高频爆破',
@@ -702,7 +702,7 @@ export const sampleReports = [
   {
     id: 'report-seed-03',
     template: '现货系统专项报',
-    eventTitle: '南网网关暴力破解',
+    eventTitle: '边界网关暴力破解',
     timestamp: '2026/3/1 11:45:09',
     content: '【摘要】3分钟内失败87次。\n【风险】账号碰撞逼近成功。\n【建议】冻结账号+MFA强制。',
   },
