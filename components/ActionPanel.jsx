@@ -7,7 +7,7 @@ function ActionPanel({ selectedEvent, onCompleteDisposal }) {
   const [workflow, setWorkflow] = useState(null)
 
   const actionExamples = useMemo(
-    () => selectedEvent.actions.map((action) => `/+${action}`),
+    () => selectedEvent.actions.map((action) => `/${action}`),
     [selectedEvent],
   )
 
@@ -33,12 +33,12 @@ function ActionPanel({ selectedEvent, onCompleteDisposal }) {
       {
         id: `boot-${selectedEvent.id}`,
         role: 'bot',
-        text: `可执行处置操作：${selectedEvent.actions.join('、')}。可点击下方操作，或输入 /+处置操作名称。`,
+        text: `可执行处置操作：${selectedEvent.actions.join('、')}。可点击下方操作，或输入 /处置操作名称。`,
       },
       {
         id: `sample-${selectedEvent.id}`,
         role: 'bot',
-        text: `交互样例：输入 /+${selectedEvent.actions[0]} -> 系统会逐步提示，并要求每一步人工确认。`,
+        text: `交互样例：输入 /${selectedEvent.actions[0]} -> 系统会逐步提示，并要求每一步人工确认。`,
       },
     ])
   }, [selectedEvent])
@@ -56,7 +56,7 @@ function ActionPanel({ selectedEvent, onCompleteDisposal }) {
     setWorkflow({ action, stepIndex: 0, steps })
     setMessages((prev) => [
       ...prev,
-      { id: `u-${Date.now()}`, role: 'user', text: `/+${action}` },
+      { id: `u-${Date.now()}`, role: 'user', text: `/${action}` },
       {
         id: `b-${Date.now() + 1}`,
         role: 'bot',
@@ -111,11 +111,15 @@ function ActionPanel({ selectedEvent, onCompleteDisposal }) {
     const text = input.trim()
     if (!text) return
 
-    if (text.startsWith('/+')) {
-      const action = text.replace('/+', '').trim()
-      startWorkflow(action)
-      setInput('')
-      return
+    if (text.startsWith('/')) {
+      const action = text.replace(/^\/+/, '').replace(/^\+/, '').trim()
+      if (action === 'confirm' || action === 'cancel') {
+        // pass through to command handlers below
+      } else {
+        startWorkflow(action)
+        setInput('')
+        return
+      }
     }
 
     if (text === '/confirm') {
@@ -136,7 +140,7 @@ function ActionPanel({ selectedEvent, onCompleteDisposal }) {
       {
         id: `bw-${Date.now() + 1}`,
         role: 'bot-warning',
-        text: '请输入 /+处置操作名称，或使用 /confirm、/cancel 控制当前流程。',
+        text: '请输入 /处置操作名称，或使用 /confirm、/cancel 控制当前流程。',
       },
     ])
     setInput('')
@@ -183,7 +187,7 @@ function ActionPanel({ selectedEvent, onCompleteDisposal }) {
         <input
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="输入 /+处置操作名称，或 /confirm、/cancel"
+          placeholder="输入 /处置操作名称，或 /confirm、/cancel"
         />
         <button type="submit" className="primary-btn">
           <Send size={14} />
