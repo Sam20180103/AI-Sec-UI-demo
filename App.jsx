@@ -210,10 +210,28 @@ function App() {
 
   const handleFilterCommand = (rawQuery) => {
     const query = rawQuery.trim()
-    if (!query) return { ok: false, message: '过滤条件为空，请补充系统名/IP。' }
+    if (!query) {
+      return {
+        ok: false,
+        message:
+          '过滤条件为空。可直接用：/filter 电力交易系统；/filter 10.8.21.67；/filter 系统A 系统B 所有IP被攻击情况',
+      }
+    }
 
-    const ipMatches = query.match(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g) ?? []
-    const keywordText = query
+    const aliasMap = {
+      系统A: '电力交易系统',
+      系统B: '现货交易系统',
+      系统C: '南网边界接入系统',
+      系统D: '调度控制系统',
+    }
+
+    const expandedQuery = Object.entries(aliasMap).reduce(
+      (text, [alias, actual]) => text.replaceAll(alias, actual),
+      query,
+    )
+
+    const ipMatches = expandedQuery.match(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g) ?? []
+    const keywordText = expandedQuery
       .replace(/[，,、]/g, ' ')
       .replace(/我想看|所有|被攻击|情况|系统|告警|原始/g, ' ')
       .trim()
@@ -243,7 +261,11 @@ function App() {
     })
 
     if (filtered.length === 0) {
-      return { ok: false, message: '未命中过滤结果，请调整系统名或IP关键词。' }
+      return {
+        ok: false,
+        message:
+          '未命中过滤结果。试试：/filter 电力交易系统；/filter 现货交易系统 10.92.34.60；/filter 调度控制系统',
+      }
     }
 
     const viewId = `filter-${Date.now()}`

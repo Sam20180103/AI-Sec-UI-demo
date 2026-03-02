@@ -1322,6 +1322,40 @@ body {
   font-size: 11px;
 }
 
+.filter-examples {
+  border: 1px solid rgba(51, 65, 85, 0.82);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.52);
+  padding: 7px;
+  display: grid;
+  gap: 6px;
+}
+
+.filter-examples > span {
+  color: #67e8f9;
+  font-size: 11px;
+}
+
+.filter-example-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-example-list button {
+  border: 1px solid rgba(34, 211, 238, 0.55);
+  background: rgba(14, 116, 144, 0.18);
+  color: #a5f3fc;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.filter-example-list button:hover {
+  background: rgba(14, 116, 144, 0.3);
+}
+
 .report-wrap,
 .action-wrap {
   grid-template-rows: auto auto 1fr;

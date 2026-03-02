@@ -76,6 +76,12 @@ function ReasoningLog({ selectedEvent, onFilterCommand }) {
     { cmd: '/filter', help: '按系统/IP过滤原始告警并新开筛选页' },
   ]
   const showCommandMenu = question.trim().startsWith('/')
+  const showFilterExamples = question.trim().startsWith('/filter')
+  const filterExamples = [
+    '/filter 电力交易系统',
+    '/filter 10.8.21.67',
+    '/filter 系统A 系统B 所有IP被攻击情况',
+  ]
 
   const openEvidence = (node) => {
     const stepIndex = Math.max(0, node.stepIndex)
@@ -295,6 +301,19 @@ function ReasoningLog({ selectedEvent, onFilterCommand }) {
                 <span>{item.help}</span>
               </button>
             ))}
+
+            {showFilterExamples ? (
+              <div className="filter-examples">
+                <span>过滤用例</span>
+                <div className="filter-example-list">
+                  {filterExamples.map((example) => (
+                    <button type="button" key={example} onClick={() => setQuestion(example)}>
+                      {example}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
