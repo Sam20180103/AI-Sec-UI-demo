@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_NAME="${APP_NAME:-ai-sec-ui-demo}"
-REPO_URL="${REPO_URL:-https://github.com/Vccxx/AI-Sec-UI-demo.git}"
+REPO_URL="${REPO_URL:-https://github.com/Sam20180103/AI-Sec-UI-demo.git}"
 APP_DIR="${APP_DIR:-/opt/${APP_NAME}}"
 BRANCH="${BRANCH:-main}"
 PORT="${PORT:-4173}"
