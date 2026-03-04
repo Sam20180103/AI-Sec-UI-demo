@@ -42,6 +42,11 @@ function ReasoningLog({ selectedEvent, onFilterCommand }) {
     [selectedEvent, evidenceById],
   )
 
+  const finalAnalysis = useMemo(() => {
+    const topActions = (selectedEvent.actions ?? []).slice(0, 2).join('、')
+    return `综合判定：本次告警为「${selectedEvent.focusType}」场景，攻击结果为「${selectedEvent.attackResult}」。攻击源 ${selectedEvent.sourceIp} 对目标「${selectedEvent.target}」形成高风险威胁，建议优先执行 ${topActions}。`
+  }, [selectedEvent])
+
   const [question, setQuestion] = useState('')
   const [dialogues, setDialogues] = useState([])
   const [expandAll, setExpandAll] = useState(false)
@@ -171,6 +176,11 @@ function ReasoningLog({ selectedEvent, onFilterCommand }) {
                 ))}
               </div>
             )}
+
+            <div className="analysis-result-block">
+              <span>分析结果</span>
+              <p>{finalAnalysis}</p>
+            </div>
           </div>
 
           {dialogues.map((item) => (
