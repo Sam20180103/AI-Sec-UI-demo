@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 
 const sourceConfig = {
+  asset_map: { label: '资产安全测绘', icon: ShieldAlert },
   waf: { label: 'WAF日志', icon: ScanSearch },
   edr: { label: 'EDR记录', icon: ServerCog },
   traffic: { label: '流量分析', icon: Radar },
@@ -36,6 +37,13 @@ function CorrelationAnalysis({ selectedEvent }) {
   const activeSourceSet = new Set(activeServer?.links ?? [])
   const activeSources = selectedEvent.relatedSources.filter((item) => activeSourceSet.has(item.key))
   const serverTraffic = selectedEvent.rawTraffic.filter((item) => item.serverId === activeServer?.id)
+  const authenticityEvidence = useMemo(
+    () =>
+      (selectedEvent.authenticityEvidence ?? []).filter(
+        (item) => item.sourceKey === 'asset_map' || activeSourceSet.has(item.sourceKey),
+      ),
+    [activeSourceSet, selectedEvent],
+  )
 
   const openTrafficDetail = (flow) => {
     const rawText = [
@@ -74,6 +82,21 @@ function CorrelationAnalysis({ selectedEvent }) {
         { label: '攻击结果', value: selectedEvent.attackResult },
       ],
       rawText,
+    })
+  }
+
+  const openEvidenceDetail = (evidence) => {
+    setDetailModal({
+      type: 'auth',
+      title: `真实性依据 ${evidence.id} - ${evidence.name}`,
+      fields: [
+        { label: '依据编号', value: evidence.id },
+        { label: '证据来源', value: evidence.name },
+        { label: '对应步骤', value: `步骤 ${evidence.stepIndex + 1}` },
+        { label: '关联资产', value: activeServer?.name ?? selectedEvent.target },
+        { label: '真实性信号', value: evidence.riskSignal ?? '高关联' },
+      ],
+      rawText: evidence.raw ?? evidence.summary ?? '暂无证据原文',
     })
   }
 
@@ -193,6 +216,38 @@ function CorrelationAnalysis({ selectedEvent }) {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="auth-basis-panel">
+          <div className="traffic-title">攻击真实性判定依据</div>
+          <div className="auth-basis-list">
+            {authenticityEvidence.length === 0 ? (
+              <div className="auth-basis-item">
+                <div className="auth-basis-main">
+                  <strong>暂无真实性依据</strong>
+                  <span>当前资产未匹配到可用于真实性判定的设备证据。</span>
+                </div>
+              </div>
+            ) : (
+              authenticityEvidence.map((item) => {
+                const Icon = sourceConfig[item.sourceKey]?.icon ?? Database
+                return (
+                  <div key={item.id} className="auth-basis-item">
+                    <div className="auth-basis-main">
+                      <strong>
+                        <Icon size={13} />
+                        {item.id} · {item.name}
+                      </strong>
+                      <span>{item.summary}</span>
+                    </div>
+                    <button type="button" className="detail-btn" onClick={() => openEvidenceDetail(item)}>
+                      查看依据
+                    </button>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
 
