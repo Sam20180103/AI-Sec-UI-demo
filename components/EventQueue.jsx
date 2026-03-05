@@ -16,6 +16,20 @@ function EventQueue({
   const [attackFilter, setAttackFilter] = useState('全部')
   const [noiseFilter, setNoiseFilter] = useState('全部')
   const [attackSort, setAttackSort] = useState('time')
+  const [categoryFilter, setCategoryFilter] = useState('全部')
+
+  const categoryCount = useMemo(
+    () =>
+      events.reduce(
+        (acc, event) => {
+          const category = event.eventCategory ?? '外网事件'
+          acc[category] = (acc[category] ?? 0) + 1
+          return acc
+        },
+        { 内网事件: 0, 外网事件: 0, 钓鱼事件: 0 },
+      ),
+    [events],
+  )
 
   const statusCount = useMemo(
     () =>
@@ -43,9 +57,14 @@ function EventQueue({
   )
 
   const filteredAttackEvents = useMemo(() => {
-    if (attackFilter === '全部') return events
-    return events.filter((event) => (event.disposalStatus === '已处置' ? '已处置' : '未处置') === attackFilter)
-  }, [attackFilter, events])
+    return events.filter((event) => {
+      const statusMatched =
+        attackFilter === '全部' ||
+        (event.disposalStatus === '已处置' ? '已处置' : '未处置') === attackFilter
+      const categoryMatched = categoryFilter === '全部' || event.eventCategory === categoryFilter
+      return statusMatched && categoryMatched
+    })
+  }, [attackFilter, categoryFilter, events])
 
   const sortedAttackEvents = useMemo(() => {
     const severityOrder = { 紧急: 3, 高危: 2, 中危: 1 }
@@ -111,9 +130,18 @@ function EventQueue({
       {activeTab === 'attack' ? (
         <>
           <div className="queue-summary">
-            <div className="summary-total">
-              <span>告警总数</span>
-              <strong>{filteredAttackEvents.length}/{events.length}</strong>
+            <div className="queue-toolbar">
+              <div className="summary-total inline">
+                <span>告警总数</span>
+                <strong>{filteredAttackEvents.length}/{events.length}</strong>
+              </div>
+              <div className="queue-sorter inline">
+                <span>排序方式</span>
+                <select value={attackSort} onChange={(event) => setAttackSort(event.target.value)}>
+                  <option value="time">按时间</option>
+                  <option value="severity">按危急程度</option>
+                </select>
+              </div>
             </div>
             <div className="summary-status-grid">
               <button
@@ -141,17 +169,22 @@ function EventQueue({
                 <strong>{events.length}</strong>
               </button>
             </div>
+            <div className="category-filter-row">
+              {['全部', '内网事件', '外网事件', '钓鱼事件'].map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={`category-chip ${categoryFilter === category ? 'active' : ''}`}
+                  onClick={() => setCategoryFilter(category)}
+                >
+                  <span>{category}</span>
+                  <strong>{category === '全部' ? events.length : categoryCount[category] ?? 0}</strong>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="queue-scrollbox">
-            <div className="queue-sorter">
-              <span>排序方式</span>
-              <select value={attackSort} onChange={(event) => setAttackSort(event.target.value)}>
-                <option value="time">按时间</option>
-                <option value="severity">按危急程度</option>
-              </select>
-            </div>
-
             <div className="queue-list">
               {sortedAttackEvents.length === 0 ? <div className="empty-tip">当前筛选条件下暂无告警。</div> : null}
               {sortedAttackEvents.map((event) => {
@@ -176,6 +209,9 @@ function EventQueue({
                     <h3>{event.title}</h3>
                     <p>{event.summary}</p>
                     <div className="event-tags">
+                      <span className={`event-tag category ${event.eventCategory || '外网事件'}`}>
+                        {event.eventCategory || '外网事件'}
+                      </span>
                       <span className="event-tag focus">{event.focusType}</span>
                       <span className="event-tag window">{event.timeWindow}</span>
                     </div>

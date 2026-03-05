@@ -2786,6 +2786,23 @@ body {
   color: #1f3f67;
 }
 
+.analysis-result-content {
+  margin-top: 2px;
+  display: grid;
+  gap: 2px;
+}
+
+.analysis-line {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f3f67;
+}
+
+.analysis-line strong {
+  font-weight: 700;
+}
+
 .reasoning-line-head {
   display: flex;
   align-items: center;
@@ -3067,4 +3084,185 @@ body {
 .action-wrap .action-dialog-item {
   font-size: 14px;
   line-height: 1.5;
+}
+
+.queue-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.summary-total.inline,
+.queue-sorter.inline {
+  margin: 0;
+}
+
+.category-filter-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.category-chip {
+  border: 1px solid #b7cde7;
+  background: rgba(247, 252, 255, 0.95);
+  color: #2b4f80;
+  border-radius: 999px;
+  padding: 5px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.category-chip.active {
+  border-color: rgba(47, 125, 246, 0.72);
+  background: rgba(47, 125, 246, 0.12);
+  color: #0f3f8d;
+}
+
+.category-chip strong {
+  font-size: 12px;
+}
+
+.event-tag.category {
+  border-color: rgba(100, 116, 139, 0.35);
+  background: rgba(226, 232, 240, 0.45);
+  color: #334155;
+}
+
+.event-tag.category.内网事件 {
+  border-color: rgba(2, 132, 199, 0.35);
+  background: rgba(186, 230, 253, 0.35);
+  color: #075985;
+}
+
+.event-tag.category.外网事件 {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(254, 215, 170, 0.28);
+  color: #9a3412;
+}
+
+.event-tag.category.钓鱼事件 {
+  border-color: rgba(225, 29, 72, 0.35);
+  background: rgba(254, 205, 211, 0.35);
+  color: #9f1239;
+}
+
+.gray-analysis-block {
+  margin-top: 8px;
+  border-top: 1px solid rgba(191, 212, 238, 0.55);
+  padding-top: 6px;
+  display: grid;
+  gap: 6px;
+}
+
+.gray-analysis-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.gray-analysis-head span {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f3f67;
+}
+
+.gray-analysis-head em {
+  font-size: 14px;
+  color: #1f3f67;
+  line-height: 1.5;
+  font-style: normal;
+}
+
+.gray-phase-list {
+  display: grid;
+  gap: 4px;
+}
+
+.gray-phase-item {
+  border: 1px solid #cadaf0;
+  border-radius: 7px;
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f3f67;
+}
+
+.gray-phase-item em {
+  font-style: normal;
+  color: #1f3f67;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-left: auto;
+}
+
+.gray-phase-item.running {
+  border-color: rgba(59, 130, 246, 0.6);
+  color: #1d4f9a;
+  background: rgba(191, 219, 254, 0.3);
+}
+
+.gray-phase-item.done {
+  border-color: rgba(22, 163, 74, 0.5);
+  color: #166534;
+  background: rgba(220, 252, 231, 0.35);
+}
+
+.gray-result-box {
+  border: 1px solid #bed5ef;
+  border-radius: 9px;
+  background: rgba(247, 252, 255, 0.96);
+  padding: 6px 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.gray-result-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #174f9e;
+}
+
+.gray-result-head strong {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.gray-result-policy {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f3f67;
+}
+
+.gray-result-box ol {
+  margin: 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 3px;
+}
+
+.gray-result-box li {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f3f67;
+}
+
+@media (max-width: 1100px) {
+  .queue-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .category-filter-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

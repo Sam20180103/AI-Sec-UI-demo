@@ -76,7 +76,7 @@ function HeaderStats({ aiEfficiencyStages, attackTrend24h }) {
       <div className="stat-card">
         <div className="card-title">
           <Sparkles size={16} />
-          <span>AI三级降噪</span>
+          <span>大瓦特模型三级降噪</span>
         </div>
         <div className="efficiency-flow">
           {stages.map((stage, index) => (
