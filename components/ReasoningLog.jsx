@@ -104,6 +104,7 @@ function ReasoningLog({ selectedEvent, onFilterCommand, grayBlueprint, onGrayAna
   const [grayStarted, setGrayStarted] = useState(false)
   const [grayPhaseResult, setGrayPhaseResult] = useState({})
   const dialogueListRef = useRef(null)
+  const disposedGrayReportedRef = useRef('')
 
   const analysisLines = useMemo(() => typedAnalysis.split('\n'), [typedAnalysis])
   const isAnalysisComplete = !analysisTyping && typedAnalysis === finalAnalysis && finalAnalysis.length > 0
@@ -185,6 +186,7 @@ function ReasoningLog({ selectedEvent, onFilterCommand, grayBlueprint, onGrayAna
     setGrayLatency(0)
     setGrayDone(false)
     setGrayPhaseResult({})
+    disposedGrayReportedRef.current = ''
   }, [selectedEvent.id])
 
   useEffect(() => {
@@ -198,10 +200,15 @@ function ReasoningLog({ selectedEvent, onFilterCommand, grayBlueprint, onGrayAna
       setGrayPhaseResult(
         Object.fromEntries(grayPhases.map((_, index) => [index, '已完成（已处置事件）'])),
       )
-      onGrayAnalysisReady?.(selectedEvent.id, {
-        ...grayBlueprint,
-        latencyMs: 0,
-      })
+
+      if (disposedGrayReportedRef.current !== selectedEvent.id) {
+        disposedGrayReportedRef.current = selectedEvent.id
+        onGrayAnalysisReady?.(selectedEvent.id, {
+          ...grayBlueprint,
+          latencyMs: 0,
+        })
+      }
+
       return undefined
     }
 

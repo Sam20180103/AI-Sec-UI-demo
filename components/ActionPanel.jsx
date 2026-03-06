@@ -6,6 +6,7 @@ function ActionPanel({ selectedEvent, grayResult, onCompleteDisposal }) {
   const [input, setInput] = useState('')
   const [awaitingConfirm, setAwaitingConfirm] = useState(false)
   const [executing, setExecuting] = useState(false)
+  const [executionLocked, setExecutionLocked] = useState(selectedEvent.disposalStatus === '已处置')
   const actionListRef = useRef(null)
   const executionTokenRef = useRef(0)
   const latestGrayResultIdRef = useRef('')
@@ -19,6 +20,7 @@ function ActionPanel({ selectedEvent, grayResult, onCompleteDisposal }) {
     latestGrayResultIdRef.current = ''
     setAwaitingConfirm(false)
     setExecuting(false)
+    setExecutionLocked(selectedEvent.disposalStatus === '已处置')
     setInput('')
     setMessages([
       {
@@ -57,7 +59,7 @@ function ActionPanel({ selectedEvent, grayResult, onCompleteDisposal }) {
   }
 
   const startExecution = async (plan, autoMode = false) => {
-    if (!plan || executing) return
+    if (!plan || executing || executionLocked) return
 
     const token = Date.now()
     executionTokenRef.current = token
@@ -99,12 +101,16 @@ function ActionPanel({ selectedEvent, grayResult, onCompleteDisposal }) {
         text: `${autoMode ? '自动' : '确认后'}柔性灰度处置已完成，事件已回传闭环状态。`,
       },
     ])
+    setExecutionLocked(true)
     onCompleteDisposal?.(selectedEvent.id)
     setExecuting(false)
   }
 
   useEffect(() => {
     if (!grayResult) return
+
+    if (executionLocked || selectedEvent.disposalStatus === '已处置') return
+
     const signature = `${grayResult.eventId}-${grayResult.updatedAt ?? 0}`
     if (latestGrayResultIdRef.current === signature) return
     latestGrayResultIdRef.current = signature
@@ -142,7 +148,7 @@ function ActionPanel({ selectedEvent, grayResult, onCompleteDisposal }) {
         text: '是否执行上述柔性灰度处置步骤？请输入 /confirm 执行或 /cancel 取消。',
       },
     ])
-  }, [grayResult])
+  }, [grayResult, executionLocked, selectedEvent.disposalStatus])
 
   const handleCommand = (rawText) => {
     const text = rawText.trim()
@@ -150,6 +156,13 @@ function ActionPanel({ selectedEvent, grayResult, onCompleteDisposal }) {
 
     if (text === '/confirm') {
       appendMessages([{ id: `u-${Date.now()}`, role: 'user', text }])
+      if (executionLocked || selectedEvent.disposalStatus === '已处置') {
+        appendMessages([
+          { id: `done-warn-${Date.now() + 1}`, role: 'bot-warning', text: '当前事件已完成处置，无需重复执行。' },
+        ])
+        setInput('')
+        return
+      }
       if (!awaitingConfirm || !grayResult) {
         appendMessages([
           { id: `warn-${Date.now() + 1}`, role: 'bot-warning', text: '当前没有待确认的柔性处置任务。' },
@@ -179,6 +192,13 @@ function ActionPanel({ selectedEvent, grayResult, onCompleteDisposal }) {
 
     if (text === '/柔性灰度处置') {
       appendMessages([{ id: `u-${Date.now()}`, role: 'user', text }])
+      if (executionLocked || selectedEvent.disposalStatus === '已处置') {
+        appendMessages([
+          { id: `done-tip-${Date.now() + 1}`, role: 'bot', text: '该事件已完成处置，当前展示为最终结果。' },
+        ])
+        setInput('')
+        return
+      }
       if (!grayResult) {
         appendMessages([
           {

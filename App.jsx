@@ -453,6 +453,10 @@ function App() {
   }
 
   const handleCompleteDisposal = (eventId, viewId = activeViewId) => {
+    const existsInAttackEvents = attackEvents.some((event) => event.id === eventId)
+
+    if (!existsInAttackEvents) return
+
     setAttackEvents((prev) =>
       prev.map((event) =>
         event.id === eventId
@@ -463,11 +467,6 @@ function App() {
           : event,
         ),
     )
-
-    setSelectedByView((prev) => ({
-      ...prev,
-      [viewId]: { type: 'attack', id: eventId },
-    }))
   }
 
   const closeView = (viewId) => {
